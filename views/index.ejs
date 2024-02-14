@@ -1,0 +1,66 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" integrity="sha512-HXXR0l2yMwHDrDyxJbrMD9eLvPe3z3qL3PPeozNTsiHJEENxx8DH2CxmV05iwG0dwoz5n4gQZQyYLUNt1Wdgfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+ </head>
+ <body>
+  
+    <div id="main">
+        <div class="left">
+
+            <button>
+                <i class="ri-home-fill"></i>
+                <p>Home</p>
+            </button>
+            <a href="/search">
+                <i class="ri-search-line"></i>
+                <p>Search</p>
+            </a>
+
+
+        </div>
+        <div class="right">
+            <div class="scroll">
+                <div class="musics">
+    
+                    <% CurrentUser.playlist[0].song.forEach(songs =>{ %>
+          
+                      <div class="song" onclick="songCardClicked('<%= songs.filename %>')" >
+                          <img src="/poster/<%= songs.poster %>" alt="">
+                          <div class="text">
+                              <h5><%= songs.title %></h5>
+                              <p><%= songs.artist %></p>
+                              <p><%= songs.album %></p>
+                          </div>
+                          <div class="playbutton">
+                              <i class="ri-play-circle-fill"></i>
+                          </div>
+                      </div>
+                      
+                      <% })%>
+                </div>
+            </div>
+
+            <audio src="/stream/8f1dd2e495681d38b1064d7aa131f58c521ebcce" controls></audio>
+
+        </div>
+    </div>
+
+
+
+    <script>
+        function songCardClicked(filename){
+         document.querySelector('audio').setAttribute('src', `/stream/${filename}`);
+         document.querySelector('audio').play()
+        }
+    </script>
+
+
+
+ </body>
+ </html>

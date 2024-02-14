@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+    
+    <input style="color: black;" type="text" placeholder="Eater the music">
+    <button style="color: black;" onclick="searchSong()">Search</button>
+
+    <div class="right" style="width: 100%;">
+        <div class="scroll">
+            <div class="musics">
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js" integrity="sha512-emSwuKiMyYedRwflbZB2ghzX8Cw8fmNVgZ6yQNNXXagFzFOaQmbvQ1vmDkddHjm5AITcBIZfC7k4ShQSjgPAmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        async function searchSong() {
+           const result = await axios.post('/search',{
+                search: document.querySelector('input').value
+            })
+            
+        let clutter ="";
+            result.data.songs.forEach(songs =>{
+                clutter+= ` <div class="song" onclick="songCardClicked('${songs.filename} ')" >
+                    <img src="/poster/${songs.poster} " alt="">
+                    <div class="text">
+                        <h5> ${songs.title }</h5>
+                        <p> ${songs.artist}</p>
+                        <p>${ songs.album}</p>
+                    </div>
+                    <div class="playbutton">
+                        <i class="ri-play-circle-fill"></i>
+                    </div>
+                </div>
+                `
+            })
+
+            document.querySelector('.musics').innerHTML = clutter
+
+        }
+
+
+
+
+
+    </script>
+
+</body>
+</html>

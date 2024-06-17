@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Song</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" integrity="sha512-HXXR0l2yMwHDrDyxJbrMD9eLvPe3z3qL3PPeozNTsiHJEENxx8DH2CxmV05iwG0dwoz5n4gQZQyYLUNt1Wdgfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        #rightPoster {
+            width: 50%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+        #rightPoster img {
+            width: 100%;
+            height: 100%;
+        }
+        .play-icon.active {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div class="left">
+            <a href="/" id="homeLink">
+                <i class="ri-home-fill"></i>
+                <p>Home</p>
+            </a>
+            <a href="/search">
+                <i class="ri-search-line"></i>
+                <p>Search</p>
+            </a>
+        </div>
+        <div class="right">
+            <div id="rightPoster">
+                <% if (songs && songs.length > 0) { %>
+                    <img src="<%= songs[0].thumbnail %>" alt="Song Thumbnail">
+                <% } else { %>
+                    <p>No songs found.</p>
+                <% } %>
+            </div>
+            <div id="slide">
+                <div id="songtype">
+                    <h3>Playlist</h3>
+                </div>
+                <% dbsongs.forEach((song, index) => { %>
+                    <div class="song" onclick="playSong('<%= song.filename %>', '<%= song.title %>', '<%= song.artist %>', '<%= song.poster || song.thumbnail || '/default-poster.jpg' %>', '<%= index %>')" id="song-<%= index %>">
+                        <div class="poster">
+                            <% if (song.poster) { %>
+                                <img src="/poster/<%= song.poster %>" alt="Song Poster">
+                            <% } else if (song.thumbnail) { %>
+                                <img src="<%= song.thumbnail %>" alt="Song Thumbnail">
+                            <% } else { %>
+                                <img src="/default-poster.jpg" alt="Default Poster">
+                            <% } %>
+                        </div>
+                        <div class="details">
+                            <h4><%= song.title %></h4>
+                            <p><%= song.artist %> - <%= song.album %></p>
+                            <i class="ri-play-fill play-icon" id="play-icon-<%= index %>"></i>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+        <div id="audioPlayerContainer">
+            <div id="progressContainer">
+                <div id="progressBar"></div>
+            </div>
+            <div id="audioPlayerDetails">
+                <% if (songs && songs.length > 0) { %>
+                    <img id="poster" src="<%= songs[0].thumbnail %>" alt="Song Poster">
+                    <div id="audiodetails">
+                        <h2 id="songTitle"><%= songs[0].title %></h2>
+                        <p id="artist"><%= songs[0].artist %></p>
+                    </div>
+                    <audio id="audioPlayer" controls autoplay>
+                        <source id="audioSource" src="/stream/public/<%= songs[0].filename %>" type="audio/mp3">
+                    </audio>
+                <% } else { %>
+                    <p>No song details found.</p>
+                <% } %>
+            </div>
+            <div id="audioPlayerControls">
+                <div id="audioControls">
+                    <i class="ri-skip-left-fill" id="skipLeft"></i>
+                    <i class="ri-play-fill" id="playPause"></i>
+                    <i class="ri-skip-right-fill" id="skipRight"></i>
+                    <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const homeLink = document.getElementById('homeLink');
+        homeLink.addEventListener('click', () => {
+            window.location.href = '/';
+        });
+
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioSource = document.getElementById('audioSource');
+        const playPauseIcon = document.getElementById('playPause');
+        const skipLeftIcon = document.getElementById('skipLeft');
+        const skipRightIcon = document.getElementById('skipRight');
+        const currentTimeElement = document.getElementById('currentTime');
+        const durationElement = document.getElementById('duration');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const songTitle = document.getElementById('songTitle');
+        const artistName = document.getElementById('artist');
+        const songPoster = document.getElementById('poster');
+        const rightPoster = document.getElementById('rightPoster');
+
+        playPauseIcon.addEventListener('click', () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playPauseIcon.className = 'ri-pause-fill';
+                playPauseIcon.classList.add('playing');
+            } else {
+                audioPlayer.pause();
+                playPauseIcon.className = 'ri-play-fill';
+                playPauseIcon.classList.remove('playing');
+            }
+        });
+
+        audioPlayer.addEventListener('play', () => {
+            playPauseIcon.className = 'ri-pause-fill';
+            playPauseIcon.classList.add('playing');
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            playPauseIcon.className = 'ri-play-fill';
+            playPauseIcon.classList.remove('playing');
+        });
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            const currentTime = formatTime(audioPlayer.currentTime);
+            const duration = formatTime(audioPlayer.duration);
+
+            currentTimeElement.textContent = currentTime;
+            durationElement.textContent = duration;
+
+            const progressWidth = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.style.width = `${progressWidth}%`;
+        });
+
+        progressContainer.addEventListener('click', (event) => {
+            const boundingRect = progressContainer.getBoundingClientRect();
+            const clickX = event.clientX - boundingRect.left;
+            const containerWidth = boundingRect.width;
+
+            const percentage = (clickX / containerWidth) * 100;
+            const duration = audioPlayer.duration;
+
+            audioPlayer.currentTime = (percentage / 100) * duration;
+            progressBar.style.width = `${percentage}%`;
+        });
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+
+        function playSong(filename, title, artist, poster, index) {
+            audioSource.src = `/stream/${filename}`;
+            audioPlayer.load();
+            audioPlayer.play();
+            songTitle.textContent = title;
+            artistName.textContent = artist;
+            songPoster.src = `/poster/${poster}`;
+            rightPoster.innerHTML = `<img src="/poster/${poster}" alt="Song Poster">`;
+
+            document.querySelectorAll('.play-icon').forEach(icon => icon.classList.remove('active'));
+            document.getElementById(`play-icon-${index}`).classList.add('active');
+        }
+
+
+
+        function updatePlayer(filename, title, artist, poster) {
+            audioSource.src = `/stream/${filename}`;
+            audioPlayer.load();
+            audioPlayer.play();
+            songTitle.textContent = title;
+            artistName.textContent = artist;
+            songPoster.src = `/poster/${poster}`;
+            rightPoster.innerHTML = `<img src="/poster/${poster}" alt="Song Poster">`;
+            playPauseIcon.className = 'ri-pause-fill';
+            playPauseIcon.classList.add('playing');
+        }
+        
+
+        
+    </script>
+</body>
+</html>

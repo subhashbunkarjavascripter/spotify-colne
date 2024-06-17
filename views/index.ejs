@@ -1,66 +1,382 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <link rel="stylesheet" href="/stylesheets/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" integrity="sha512-HXXR0l2yMwHDrDyxJbrMD9eLvPe3z3qL3PPeozNTsiHJEENxx8DH2CxmV05iwG0dwoz5n4gQZQyYLUNt1Wdgfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Document</title>
+ <link rel="stylesheet" href="/stylesheets/style.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" integrity="sha512-HXXR0l2yMwHDrDyxJbrMD9eLvPe3z3qL3PPeozNTsiHJEENxx8DH2CxmV05iwG0dwoz5n4gQZQyYLUNt1Wdgfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
- </head>
- <body>
-  
-    <div id="main">
-        <div class="left">
+</head>
+<style>
+   #audioPlayerContainer {
+       width: 100%;
+       height: 10%;
+       position: relative;
+       background-color: rgb(36, 33, 33);
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       position: fixed;
+       bottom: 0; 
+     }
+     
+</style>
+<body>
+ 
+   <div id="main">
+       <div class="left">
 
-            <button>
-                <i class="ri-home-fill"></i>
-                <p>Home</p>
-            </button>
-            <a href="/search">
-                <i class="ri-search-line"></i>
-                <p>Search</p>
-            </a>
+           <button>
+               <i class="ri-home-fill"></i>
+               <p>Home</p>
+           </button>
+           <a href="/search">
+               <i class="ri-search-line"></i>
+               <p>Search</p>
+           </a>
 
 
-        </div>
-        <div class="right">
-            <div class="scroll">
-                <div class="musics">
-    
-                    <% CurrentUser.playlist[0].song.forEach(songs =>{ %>
+       </div>
+       <div class="right">
+           <div class="scroll">
+               <div class="musics">
+
+                 
+   
+                   <% CurrentUser.playlist[0].song.forEach(songs =>{ %>
+         
+                     <div class="song" onclick="songCardClicked('<%= songs.filename %>', '<%= songs.title %>', '<%= songs.artist %>', '<%= songs.album %>', '<%= songs.poster %>')" >
+                         <img src="/poster/<%= songs.poster %>" alt="">
+                         <div class="text">
+                             <h5><%= songs.title %></h5>
+                             <p><%= songs.artist %></p>
+                             <p><%= songs.album %></p>
+                         </div>
+                         <div class="playbutton">
+                             <i class="ri-play-circle-fill"></i>
+                         </div>
+                     </div>
+                     
+                     <% })%>
+               </div>
+           </div>
+
+           <!-- <audio src="/stream/8f1dd2e495681d38b1064d7aa131f58c521ebcce" controls></audio> -->
+
+       </div>
+
+       <div id="audioPlayerContainer" style="display: none;">
+           <div id="progressContainer">
+               <div id="progressBar"></div>
+           </div>
+           <div id="audioPlayerDetails">
+               <img id="poster" src="/poster/<%= songDetails ? songDetails.poster : '' %>" alt="Song Poster">
+               <div id="audiodetails">
+                   <h2 id="songTitle"><%= songDetails ? songDetails.title : 'No song selected' %></h2>
+                   <p id="artist"><%= songDetails ? songDetails.artist : '' %></p>
+                   <p id="album"><%= songDetails ? songDetails.album : '' %></p>
+               </div>
+           </div>
+       
+           <div id="audioPlayerControls"> 
+               <div id="audioControls">
+                   <i class="ri-skip-left-fill" id="skipLeft"></i>
+                   <i class="ri-play-fill" id="playPause"></i>
+                   <i class="ri-skip-right-fill" id="skipRight"></i>
+                   <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+               </div>  
+               <audio id="audioPlayer" controls>   
+                   <source src="/stream/<%= songDetails ? songDetails.filename : '' %>" type="audio/mpeg">
+               </audio>
+               
+           </div>
+       </div>
+
+         
+   </div>
+
+
+
+   <script>
+
+
+       async function songCardClicked(filename, title, artist, album, poster) {
+           try {
+               await fetch('/setcurrentsong', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json'
+                   },
+                   body: JSON.stringify({ filename })
+               });
+       
+               const audioPlayerContainer = document.getElementById('audioPlayerContainer');
+               audioPlayerContainer.classList.add('active');
+               audioPlayerContainer.removeAttribute('style');
+       
+               const songTitleElement = document.getElementById('songTitle');
+               const artistElement = document.getElementById('artist');
+               const albumElement = document.getElementById('album');
+               const posterElement = document.getElementById('poster');
+       
+               songTitleElement.textContent = title;
+               artistElement.textContent = artist;
+               albumElement.textContent = album;
+               posterElement.src = `/poster/${poster}`;
+       
+               const audioPlayer = document.getElementById('audioPlayer');
+               audioPlayer.setAttribute('src', `/stream/${filename}`);
+               audioPlayer.play();
+           } catch (error) {
+               console.error('Error in songCardClicked:', error);
+           }
+       }
+           
+
+       async function fetchCurrentSong() {
+           try {
+               const response = await fetch('/getcurrentsong');
+               if (response.ok) {
+                   const data = await response.json();
+                   return data.currentSong;
+               } else {
+                   console.error('Failed to fetch current song:', response.statusText);
+                   return null;
+               }
+           } catch (error) {
+               console.error('Error fetching current song:', error);
+               return null;
+           }
+       }
+       
+
+
+       
+       const audioPlayer = document.getElementById('audioPlayer');
+       const playPauseIcon = document.getElementById('playPause');
+       const skipLeftIcon = document.getElementById('skipLeft');
+       const skipRightIcon = document.getElementById('skipRight');
+       const currentTimeElement = document.getElementById('currentTime');
+       const durationElement = document.getElementById('duration');
+       const progressContainer = document.getElementById('progressContainer');
+       const progressBar = document.getElementById('progressBar');
+
+
+       playPauseIcon.addEventListener('click', () => {
+           if (audioPlayer.paused) {
+               audioPlayer.play();
+               playPauseIcon.className = 'ri-pause-fill';
+               playPauseIcon.classList.add('playing');
+           } else {
+               audioPlayer.pause();
+               playPauseIcon.className = 'ri-play-fill';
+               playPauseIcon.classList.remove('playing');
+           }
+       });
+       
+
+       audioPlayer.addEventListener('play', () => {
+           playPauseIcon.className = 'ri-pause-fill';
+           playPauseIcon.classList.add('playing');
+       });
+       
+       audioPlayer.addEventListener('pause', () => {
+           playPauseIcon.className = 'ri-play-fill';
+           playPauseIcon.classList.remove('playing');
+       });
+
+
+
+
+       
+       skipRightIcon.addEventListener('click', () => {
+           fetch('/getnextsong')
+               .then(response => response.json())
+               .then(data => {
+                   audioPlayer.src = `/stream/${data.filename}`;
+                   audioPlayer.play();
+               })
+               .catch(error => {
+                   console.error('Error fetching next song:', error);
+               });
+       });
+       
+       skipLeftIcon.addEventListener('click', () => {
+           fetch('/getprevioussong')
+               .then(response => response.json())
+               .then(data => {
+                   audioPlayer.src = `/stream/${data.filename}`;
+                   audioPlayer.play();
+               })
+               .catch(error => {
+                   console.error('Error fetching previous song:', error);
+               });
+       });
+       
+
+
+
+
+
+
+       
+       audioPlayer.addEventListener('timeupdate', () => {
+           const currentTime = formatTime(audioPlayer.currentTime);
+           const duration = formatTime(audioPlayer.duration);
+       
+           currentTimeElement.textContent = currentTime;
+           durationElement.textContent = duration;
+       });
+       
+       function formatTime(seconds) {
+           const minutes = Math.floor(seconds / 60);
+           const remainingSeconds = Math.floor(seconds % 60);
+           const formattedTime = `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+           return formattedTime;
+       }
+       
+
+       progressContainer.addEventListener('click', (event) => {
+           const boundingRect = progressContainer.getBoundingClientRect();
+           const clickX = event.clientX - boundingRect.left;
+           const containerWidth = boundingRect.width;
+       
+           const percentage = (clickX / containerWidth) * 100;
+           const duration = audioPlayer.duration;
+       
+           audioPlayer.currentTime = (percentage / 100) * duration;
+       
+           progressBar.style.width = `${percentage}%`;
+       });
+
+
+       async function updateSongDetails() {
+           try {
+               const currentSongData = await getCurrentSongData();
+               const currentSong = currentSongData.currentSong;
+       
+               const songTitleElement = document.getElementById('songTitle');
+               const artistElement = document.getElementById('artist');
+               const albumElement = document.getElementById('album');
+               const posterElement = document.getElementById('poster');
+       
+               if (currentSong && currentSong.title) {
+                   songTitleElement.textContent = currentSong.title;
+                   artistElement.textContent = currentSong.artist || '';
+                   albumElement.textContent = currentSong.album || '';
+       
+                   posterElement.src = `/poster/${currentSong.poster}`;
+               } else {
+                   songTitleElement.textContent = title;
+                   artistElement.textContent = artist;
+                   albumElement.textContent = album;
+                   posterElement.src = `/poster/${poster}`;
+               }
+
+               
+           } catch (error) {
+               console.error('Error updating song details:', error);
+           }
+       }
+       
+       updateSongDetails();
           
-                      <div class="song" onclick="songCardClicked('<%= songs.filename %>')" >
-                          <img src="/poster/<%= songs.poster %>" alt="">
-                          <div class="text">
-                              <h5><%= songs.title %></h5>
-                              <p><%= songs.artist %></p>
-                              <p><%= songs.album %></p>
-                          </div>
-                          <div class="playbutton">
-                              <i class="ri-play-circle-fill"></i>
-                          </div>
-                      </div>
-                      
-                      <% })%>
-                </div>
-            </div>
+                
+       document.addEventListener('updateSongDetails', (event) => {
+           const updatedDetails = event.detail.currentSong;
+       });
+                 
+                   function getCurrentSongData() {
+                       return fetch('/getcurrentsong')
+                           .then(response => response.json())
+                           .catch(error => {
+                               console.error('Error fetching current song details:', error);
+                           });
+                   }
+                   
+                   function getNextSong() {
+                       fetch('/getnextsong')
+                           .then(response => response.json())
+                           .then(data => {
+                               const currentTime = audioPlayer.currentTime;
+                   
+                               audioPlayer.src = `/stream/${data.filename}`;
+                   
+                               audioPlayer.addEventListener('canplay', () => {
+                                   audioPlayer.currentTime = currentTime;
+                                   audioPlayer.play();
+                   
+                                   updateSongDetails();
+                               });
+                           })
+                           .catch(error => {
+                               console.error('Agla gana laane mein error:', error);
+                           });
+                   }
+                   
+                   function getPreviousSong() {
+                       fetch('/getprevioussong')
+                           .then(response => response.json())
+                           .then(data => {
+                               const currentTime = audioPlayer.currentTime;
+                   
+                               audioPlayer.src = `/stream/${data.filename}`;
+                   
+                               audioPlayer.addEventListener('canplay', () => {
+                                   audioPlayer.currentTime = currentTime;
+                                   audioPlayer.play();
+                   
+                                   updateSongDetails();
+                               });
+                           })
+                           .catch(error => {
+                               console.error('Pichhla gana laane mein error:', error);
+                           });
+                   }
+                   
+                   audioPlayer.addEventListener('play', () => {
+                       updateSongDetails();
+                   });
+                   
+                   audioPlayer.addEventListener('pause', () => {
+                       updateSongDetails();
+                   });
+                   
+                   audioPlayer.addEventListener('timeupdate', () => {
+                       const currentTime = formatTime(audioPlayer.currentTime);
+                       const duration = formatTime(audioPlayer.duration);
+                   
+                       currentTimeElement.textContent = currentTime;
+                       durationElement.textContent = duration;
+                   
+                       const progressWidth = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                       progressBar.style.width = `${progressWidth}%`;
 
-            <audio src="/stream/8f1dd2e495681d38b1064d7aa131f58c521ebcce" controls></audio>
+                       
+                   });
+                   
+                   audioPlayer.addEventListener('canplay', () => {
+                       const progressWidth = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                       progressBar.style.width = `${progressWidth}%`;
+                   
+                       updateSongDetails();
+                   });
+                   
+                   function formatTime(seconds) {
+                       const minutes = Math.floor(seconds / 60);
+                       const remainingSeconds = Math.floor(seconds % 60);
+                       const formattedTime = `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+                       return formattedTime;
+                   }
+        
 
-        </div>
-    </div>
+
+   </script>
 
 
-
-    <script>
-        function songCardClicked(filename){
-         document.querySelector('audio').setAttribute('src', `/stream/${filename}`);
-         document.querySelector('audio').play()
-        }
-    </script>
+   
 
 
-
- </body>
- </html>
+</body>
+</html>

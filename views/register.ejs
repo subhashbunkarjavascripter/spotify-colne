@@ -9,11 +9,14 @@
     *::before,
     *::after {
     box-sizing: border-box;
-    }
-    
-    body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
     margin: 0;
     font-family: Roboto, -apple-system, 'Helvetica Neue', 'Segoe UI', Arial, sans-serif;
+    overflow-x: hidden;
     background: #180148;
     }
     
@@ -290,6 +293,67 @@
     box-shadow: inset 0 0 0 2px #a7e245;
     transform: translateX(30%);
     }
+
+    @media(max-width: 500px) {
+      .form-wrapper,
+      .form-login,
+      .form-signup,
+      .form-wrapper.is-active,
+      .form-wrapper.is-active .form-login,
+      .form-wrapper.is-active .form-signup,
+      .form fieldset,
+      .form-login fieldset,
+      .form-signup fieldset,
+      .form-wrapper.is-active fieldset,
+      .form [type='submit'],
+      .form-wrapper.is-active .form [type='submit'] {
+          animation: none !important;
+          transition: none !important;
+      }
+
+      .forms-section {
+          height: 100vh;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+      }
+
+      .forms {
+          display: block;
+          width: 100%;
+      }
+
+      .form-wrapper {
+          margin-bottom: 20px;
+          width: 100%;
+      }
+
+      .form {
+          margin: 0 auto;
+          padding: 20px;
+          width: 90%;
+          max-width: 300px;
+      }
+
+      .form-wrapper.is-active .switcher-login,
+      .form-wrapper.is-active .switcher-signup {
+          transform: none;
+      }
+
+      .form-wrapper.is-active fieldset {
+          opacity: 1;
+          transform: none;
+      }
+
+      .btn-login,
+      .btn-signup {
+          transform: none;
+      }
+  }
+
+
     </style>
 </head>
 <body>

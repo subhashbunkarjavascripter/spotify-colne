@@ -23,7 +23,10 @@
     filename : {
         type : String,
         required : true,
-    }
+    },
+    videoId: String,
+    thumbnail: { type: String },
+    filename: { type: String, required: true }
  });
 
 

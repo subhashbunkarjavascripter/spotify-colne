@@ -3,57 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Search Song</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" integrity="sha512-HXXR0l2yMwHDrDyxJbrMD9eLvPe3z3qL3PPeozNTsiHJEENxx8DH2CxmV05iwG0dwoz5n4gQZQyYLUNt1Wdgfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
-<body>
-    
-    <input style="color: black;" type="text" placeholder="Eater the music">
-    <button style="color: black;" onclick="searchSong()">Search</button>
 
-    <div class="right" style="width: 100%;">
+<body>
+    <div id="main"> 
+        <div class="left">
+
+            <button>
+                <a href="/">
+                    <i class="ri-home-fill"></i>
+                    <p>Home</p>
+                </a>
+            </button>
+            <a href="/search">
+                <i class="ri-search-line"></i>
+                <p>Search</p>
+            </a>
+ 
+ 
+        </div>
+    <div class="right" style="width: 100%; padding: 10px;">
+        <audio controls id="audioPlayer" style="display: none;"></audio>
+        <input id="searchInput" style="color: black; width: 90%; margin: 10px;" type="text" placeholder="Enter the music title or artist">
+        <button id="search" style="color: #fff; background-color: royalblue; margin: 10px; border-radius: 10px; border: none; padding: 5px; font-size: 1.3vw;" onclick="searchSong()">Search</button>
         <div class="scroll">
-            <div class="musics">
+            <div id="resultContainer"  class="musics">
+               
+                
+
 
             </div>
-
         </div>
     </div>
 
+    
+
+
+
+</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js" integrity="sha512-emSwuKiMyYedRwflbZB2ghzX8Cw8fmNVgZ6yQNNXXagFzFOaQmbvQ1vmDkddHjm5AITcBIZfC7k4ShQSjgPAmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script>
         async function searchSong() {
-           const result = await axios.post('/search',{
-                search: document.querySelector('input').value
-            })
-            
-        let clutter ="";
-            result.data.songs.forEach(songs =>{
-                clutter+= ` <div class="song" onclick="songCardClicked('${songs.filename} ')" >
-                    <img src="/poster/${songs.poster} " alt="">
-                    <div class="text">
-                        <h5> ${songs.title }</h5>
-                        <p> ${songs.artist}</p>
-                        <p>${ songs.album}</p>
-                    </div>
-                    <div class="playbutton">
-                        <i class="ri-play-circle-fill"></i>
-                    </div>
-                </div>
-                `
-            })
+            try {
+                const searchInput = document.getElementById('searchInput').value;
+                const result = await axios.post('/search', {
+                    search: searchInput
+                });
 
-            document.querySelector('.musics').innerHTML = clutter
+                const results = result.data.songs;
 
+                if (results.length > 0) {
+                    let clutter = "";
+                    results.forEach(song => {
+                        clutter += `
+                            <div class="song" onclick="songCardClicked('${song.videoId}')">
+                                <img src="${song.thumbnail}" alt="Thumbnail">
+                                <div class="text">
+                                    <h5>${song.title}</h5>
+                                    <p>${song.description || 'No description available'}</p>
+                                    <p>${song.size || 'Unknown album'}</p>
+                                </div>
+                                <div class="playbutton">
+                                    <i class="ri-play-circle-fill"></i>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    document.querySelector('.musics').innerHTML = clutter;
+
+                    document.getElementById('searchInput').style.display = 'none';
+                    document.getElementById('search').style.display = 'none';
+                } else {
+                    alert('No songs found.');
+                }
+            } catch (error) {
+                console.error('Error in searchSong:', error);
+            }
         }
-
-
-
-
-
+        function songCardClicked(videoId) {
+            window.location.href = `/playsong?videoId=${videoId}`;
+        }
     </script>
-
 </body>
 </html>

@@ -9,7 +9,7 @@ const multer = require('multer');
 var id3 = require('node-id3');
 const { Readable } = require('stream');
 const crypto = require('crypto');
-
+require('dotenv').config();
 const axios = require('axios'); 
 const { exec: execChildProcess } = require('child_process');
 const { exec: execYoutubeDL } = require('youtube-dl-exec');
@@ -27,15 +27,25 @@ const mongoose  = require('mongoose');
 
 passport.use(new localStrategy(users.authenticate()));
 
-mongoose.connect('mongodb://0.0.0.0/socketio', {
+const dbURI = 'mongodb://localhost:27017/socketio';
+mongoose.connect(dbURI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 50000,
+  socketTimeoutMS: 45000,
 }).then(() => {
   console.log('Connected to database');
 }).catch(err => {
   console.log('Database connection error:', err);
 });
- 
+
+mongoose.connection.on('error', err => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.once('open', () => {
+  console.log('Connected to MongoDB');
+});
 
 const conn = mongoose.connection
 
@@ -51,7 +61,7 @@ conn.once('open',()=>{
     bucketName: 'poster'
   });
 
-  console.log('Connection to database opened');
+  console.log('GridFS Buckets initialized'); 
 
 
 

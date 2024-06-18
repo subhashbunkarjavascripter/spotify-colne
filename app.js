@@ -9,6 +9,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./models/userModel');
 
 const passport = require('passport');
+require('dotenv').config();
 
 
 var app = express();

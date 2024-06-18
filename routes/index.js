@@ -9,8 +9,8 @@ const multer = require('multer');
 var id3 = require('node-id3');
 const { Readable } = require('stream');
 const crypto = require('crypto');
-require('dotenv').config();
 
+require('dotenv').config();
 
 const axios = require('axios'); 
 const { exec: execChildProcess } = require('child_process');
@@ -30,7 +30,7 @@ const mongoose  = require('mongoose');
 passport.use(new localStrategy(users.authenticate()));
 
 const dbURI = 'mongodb://localhost:27017/socketio';
-const mongoURI = process.env.MONGO_URI;
+const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/socketio'; 
 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,

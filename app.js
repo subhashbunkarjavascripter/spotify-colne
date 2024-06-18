@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const expressSession = require("express-session");
+const MongoDBStore = require('connect-mongodb-session')(expressSession);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./models/userModel');
@@ -20,14 +21,18 @@ app.set('view engine', 'ejs');
 
 const store = new MongoDBStore({
   uri: process.env.MONGO_URI,
-  collection: 'sessions' 
+  collection: 'sessions'
+});
+
+store.on('error', function(error) {
+  console.log('MongoDBStore error:', error);
 });
 
 app.use(expressSession({
-  resave:false,
-  saveUninitialized:false,
-  secret:"lalalaala",
-  store: store,
+  secret: 'lalalaala',
+  resave: false,
+  saveUninitialized: false,
+  store: store
 }));
 app.use(passport.initialize());
 app.use(passport.session());

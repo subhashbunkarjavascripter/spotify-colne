@@ -28,15 +28,21 @@ const mongoose  = require('mongoose');
 passport.use(new localStrategy(users.authenticate()));
 
 const dbURI = 'mongodb://localhost:27017/socketio';
-mongoose.connect(dbURI, {
+const mongoURI = process.env.MONGO_URI;
+
+mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 50000,
-  socketTimeoutMS: 45000,
-}).then(() => {
-  console.log('Connected to database');
-}).catch(err => {
-  console.log('Database connection error:', err);
+});
+
+const db = mongoose.connection;
+
+db.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+
+db.once('open', () => {
+  console.log('Connected to MongoDB');
 });
 
 mongoose.connection.on('error', err => {

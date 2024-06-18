@@ -18,10 +18,16 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+const store = new MongoDBStore({
+  uri: process.env.MONGO_URI,
+  collection: 'sessions' 
+});
+
 app.use(expressSession({
   resave:false,
   saveUninitialized:false,
-  secret:"lalalaala"
+  secret:"lalalaala",
+  store: store,
 }));
 app.use(passport.initialize());
 app.use(passport.session());

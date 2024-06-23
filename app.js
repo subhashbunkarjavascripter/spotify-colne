@@ -29,8 +29,13 @@ store.on('error', function(error) {
   console.log('MongoDBStore error:', error);
 });
 
+store.on('connected', function() {
+  console.log('MongoDBStore connected successfully');
+});
+
+
 app.use(expressSession({
-  secret: 'lalalaala',
+  secret:  process.env.SESSION_SECRET || 'lalalaala',
   resave: false,
   saveUninitialized: false,
   store: store

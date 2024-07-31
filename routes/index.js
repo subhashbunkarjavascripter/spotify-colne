@@ -29,7 +29,7 @@ const mongoose  = require('mongoose');
 
 passport.use(new localStrategy(users.authenticate()));
 
-const dbURI = 'mongodb+srv://subhashbunkarjavascripter9685:9fdTsdUfeZlI0FSs@cluster0.vuy8vkh.mongodb.net/socketio?retryWrites=true&w=majority&appName=Cluster0';
+const dbURI = 'mongodb+srv://subhashbunkarjavascripter9685:qX5zd62lC5HH44Tp@cluster0.zshuscq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/socketio'; 
 
 mongoose.connect(mongoURI, {
